@@ -1,7 +1,5 @@
-import dayjs from "dayjs";
-
 export type ITimeSpanReport = {
-    date: dayjs.Dayjs;
+    date: string;
     confirmed: number;
     confirmedDiff: number;
     deaths: number;
@@ -10,7 +8,7 @@ export type ITimeSpanReport = {
 
 export type IStatesReportByDate = {
     name: string;
-    date: dayjs.Dayjs;
+    date: string;
     confirmed: number;
     deaths: number;
 }[];

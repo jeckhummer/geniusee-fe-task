@@ -1,15 +1,21 @@
 import * as React from "react";
 
 import { Container, Divider, Header } from 'semantic-ui-react';
+import { useAppDispatch, useAppSelector } from "../hooks";
 import { useServices } from "../services";
+import { getStatesReportByDate } from "../store";
 
 export const App: React.FC = () => {
     const { covidReportService } = useServices();
+    const statesReportByDate = useAppSelector(s => s.statesReportByDate);
+    const dispatch = useAppDispatch();
 
     React.useEffect(() => {
-        covidReportService.getStatesReportByDate('2021-07-15')
-            // covidReportService.getTimeSpanReport({ period: 'from_beginning_by_month', date: dayjs('2021-07-15') })
-            .then(x => console.log(x));
+        dispatch(
+            getStatesReportByDate(
+                covidReportService.getStatesReportByDate('2021-07-15')
+            )
+        );
     }, []);
 
     return (
@@ -21,6 +27,10 @@ export const App: React.FC = () => {
                 <Divider />
 
                 Data available since 22 Jan 2020
+
+                <pre>
+                    {JSON.stringify(statesReportByDate, null, 4)}
+                </pre>
             </Container>
             <br />
         </>

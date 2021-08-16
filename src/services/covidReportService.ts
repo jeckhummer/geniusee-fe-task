@@ -7,7 +7,8 @@ import {
     ICovidReportService,
     IDateHelper,
     ICovidClientShortReport,
-    ITimeSpanReportParams
+    ITimeSpanReportParams,
+    ICovidClientFullReport
 } from "./models";
 
 export class CovidReportService implements ICovidReportService {
@@ -45,36 +46,39 @@ export class CovidReportService implements ICovidReportService {
         const shortReports = (await Promise.all(
             dates.map(x =>
                 this.client.getShortReport(x, CovidReportService.DEFAULT_COUNTRY_ISO_CODE)
+                    // to avoid Promise.all rejection
+                    .catch(() => null)
             )
             // remove days with no data (sometimes it happens)
-        )).filter(Boolean);
+        )).filter(Boolean) as ICovidClientShortReport[];
 
         return CovidReportService.convertToTimeSpanReport(shortReports)
             // remove extra day from the start
-            .filter(x => x.date.isAfter(start));
+            .filter(x => dayjs(x.date).isAfter(start));
     }
 
     public getStatesReportByDate = async (date: dayjs.ConfigType): Promise<IStatesReportByDate> => {
-        const response = await this.client.getFullReport(date, CovidReportService.DEFAULT_COUNTRY_ISO_CODE);
+        const response = await this.client.getFullReport(date, CovidReportService.DEFAULT_COUNTRY_ISO_CODE)
+            .catch(() => null);
 
-        return response.map(x => ({
-            date: dayjs(date),
-            name: x.region.province,
-            confirmed: x.confirmed,
-            deaths: x.deaths,
-        }));
+        return response
+            ? response
+                .map(CovidReportService.convertToStateReportByDate)
+                // remove strange state named 'Recovered' coming from API ¯\_(ツ)_/¯
+                .filter(x => x.name !== 'Recovered')
+            : [];
     }
 
     public getEarliestAvailableReportDate = (): dayjs.ConfigType => {
         return new Date(2020, 0, 22); // 22 Jan 2020
     }
 
-    private static convertToTimeSpanReport = (shortReports: (ICovidClientShortReport | null)[]): ITimeSpanReport => {
+    private static convertToTimeSpanReport = (shortReports: ICovidClientShortReport[]): ITimeSpanReport => {
         return shortReports.reduce<ITimeSpanReport>((acc, short, i) => {
             if (short) {
                 const prev = acc[i - 1];
                 const item: ITimeSpanReport[0] = {
-                    date: dayjs(short.date),
+                    date: short.date,
                     confirmed: short.confirmed,
                     confirmedDiff: short.confirmed - (prev?.confirmed ?? 0),
                     deaths: short.deaths,
@@ -85,5 +89,14 @@ export class CovidReportService implements ICovidReportService {
 
             return acc;
         }, []);
+    }
+
+    private static convertToStateReportByDate = (report: ICovidClientFullReport[0]): IStatesReportByDate[0] => {
+        return {
+            date: report.date,
+            name: report.region.province,
+            confirmed: report.confirmed,
+            deaths: report.deaths,
+        };
     }
 }

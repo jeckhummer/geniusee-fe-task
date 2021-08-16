@@ -28,9 +28,7 @@ export class CovidAPIClient implements ICovidAPIClient {
 
         return (await this.axiosInstance.get<{ data: ICovidClientFullReport }>(
             `https://covid-api.com/api/reports${qs}`
-        )).data.data
-            // remove strange record coming from API ¯\_(ツ)_/¯
-            .filter(x => x.region.province !== 'Recovered');
+        )).data.data;
     }
 
     private formatDate = (date: dayjs.ConfigType) => {
