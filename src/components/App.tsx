@@ -1,4 +1,3 @@
-import dayjs from "dayjs";
 import * as React from "react";
 
 import { Container, Divider, Header } from 'semantic-ui-react';
@@ -8,7 +7,8 @@ export const App: React.FC = () => {
     const { covidReportService } = useServices();
 
     React.useEffect(() => {
-        covidReportService.getTimeSpanReport({ period: 'from_beginning_per_month', date: dayjs('2021-07-15') })
+        covidReportService.getStatesReportByDate('2021-07-15')
+            // covidReportService.getTimeSpanReport({ period: 'from_beginning_by_month', date: dayjs('2021-07-15') })
             .then(x => console.log(x));
     }, []);
 

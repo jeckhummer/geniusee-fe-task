@@ -2,7 +2,7 @@ import { AxiosInstance } from "axios";
 import dayjs from 'dayjs';
 import QueryString from "qs";
 
-import { ICovidAPIClient, ICovidClientFullReport, IFullReportParams, ICovidClientShortReport } from "./models";
+import { ICovidAPIClient, ICovidClientFullReport, ICovidClientShortReport } from "./models";
 
 export class CovidAPIClient implements ICovidAPIClient {
     public constructor(private readonly axiosInstance: AxiosInstance) { }
@@ -16,23 +16,21 @@ export class CovidAPIClient implements ICovidAPIClient {
             `https://covid-api.com/api/reports/total${qs}`
         )).data.data;
 
+        // API returns {data: []} if no data is available for specified date
         return report.date ? report : null;
     }
 
-    public getFullReport = async ({
-        date,
-        countryISOCode,
-        page,
-        pageSize,
-    }: IFullReportParams): Promise<ICovidClientFullReport> => {
+    public getFullReport = async (date: dayjs.ConfigType, countryISOCode: string): Promise<ICovidClientFullReport> => {
         const qs = QueryString.stringify({
             date: this.formatDate(date),
             iso: countryISOCode,
-            page,
-            per_page: pageSize,
         }, { addQueryPrefix: true });
 
-        return (await this.axiosInstance.get(`https://covid-api.com/api/reports${qs}`)).data;
+        return (await this.axiosInstance.get<{ data: ICovidClientFullReport }>(
+            `https://covid-api.com/api/reports${qs}`
+        )).data.data
+            // remove strange record coming from API ¯\_(ツ)_/¯
+            .filter(x => x.region.province !== 'Recovered');
     }
 
     private formatDate = (date: dayjs.ConfigType) => {

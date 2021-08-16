@@ -1,8 +1,14 @@
 import dayjs from "dayjs";
 
-import { IDetailedReportPerDate, ITimeSpanReport } from "../models";
+import { IStatesReportByDate, ITimeSpanReport } from "../models";
 import { checkExhaustiveness } from "../utils";
-import { ICovidAPIClient, ICovidReportService, IDateHelper, ICovidClientShortReport, ITimeSpanReportParams } from "./models";
+import {
+    ICovidAPIClient,
+    ICovidReportService,
+    IDateHelper,
+    ICovidClientShortReport,
+    ITimeSpanReportParams
+} from "./models";
 
 export class CovidReportService implements ICovidReportService {
     private static DEFAULT_COUNTRY_ISO_CODE = 'USA';
@@ -24,7 +30,7 @@ export class CovidReportService implements ICovidReportService {
             case 'last_month':
                 start = now.subtract(1, 'month').subtract(1, 'day');
                 break;
-            case 'from_beginning_per_month':
+            case 'from_beginning_by_month':
                 start = this.dateHelper.roundToMonth(params.date);
                 end = start.add(1, 'month').subtract(1, 'day');
                 start = start.subtract(1, 'day');
@@ -34,20 +40,29 @@ export class CovidReportService implements ICovidReportService {
         }
 
         // here we get one extra day at the start to calculate correct death/confirmed diff
+        // (sometimes diffs from API are incorrect...)
         const dates = this.dateHelper.getDatesRange(start, end);
         const shortReports = (await Promise.all(
             dates.map(x =>
                 this.client.getShortReport(x, CovidReportService.DEFAULT_COUNTRY_ISO_CODE)
             )
+            // remove days with no data (sometimes it happens)
         )).filter(Boolean);
 
         return CovidReportService.convertToTimeSpanReport(shortReports)
-            // here we remove extra day from the start
+            // remove extra day from the start
             .filter(x => x.date.isAfter(start));
     }
 
-    public getDetailedReportPerDate = (date: dayjs.ConfigType): Promise<IDetailedReportPerDate> => {
-        throw 'aaa';
+    public getStatesReportByDate = async (date: dayjs.ConfigType): Promise<IStatesReportByDate> => {
+        const response = await this.client.getFullReport(date, CovidReportService.DEFAULT_COUNTRY_ISO_CODE);
+
+        return response.map(x => ({
+            date: dayjs(date),
+            name: x.region.province,
+            confirmed: x.confirmed,
+            deaths: x.deaths,
+        }));
     }
 
     public getEarliestAvailableReportDate = (): dayjs.ConfigType => {

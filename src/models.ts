@@ -8,13 +8,9 @@ export type ITimeSpanReport = {
     deathsDiff: number;
 }[];
 
-export type IDetailedReportPerDate = {
+export type IStatesReportByDate = {
+    name: string;
     date: dayjs.Dayjs;
-    totalConfirmed: number;
-    totalDeaths: number;
-    states: {
-        name: string;
-        confirmed: number;
-        deaths: number;
-    }[]
-};
+    confirmed: number;
+    deaths: number;
+}[];
