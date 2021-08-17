@@ -43,16 +43,16 @@ export interface ICovidAPIClient {
 }
 
 export type ITimeSpanReportParams = {
-    period: 'last_week' | 'last_month'
+    span: 'last_week' | 'last_month'
 } | {
-    period: 'from_beginning_by_month';
-    date: dayjs.ConfigType;
+    span: 'from_beginning_by_month';
+    month: dayjs.ConfigType;
 };
 
 export interface ICovidReportService {
-    getTimeSpanReport: (params: ITimeSpanReportParams) => Promise<ITimeSpanReport>;
+    getTimeSpanReport: (start: dayjs.ConfigType, end: dayjs.ConfigType) => Promise<ITimeSpanReport>;
     getStatesReportByDate: (date: dayjs.ConfigType) => Promise<IStatesReportByDate>;
-    getEarliestAvailableReportDate: () => dayjs.ConfigType;
+    getEarliestAvailableReportDate: () => dayjs.Dayjs;
 }
 
 export interface IAxiosService {
@@ -63,4 +63,6 @@ export interface IDateHelper {
     roundToDate: (datetime: dayjs.ConfigType) => dayjs.Dayjs;
     roundToMonth: (datetime: dayjs.ConfigType) => dayjs.Dayjs;
     getDatesRange: (start: dayjs.ConfigType, end: dayjs.ConfigType) => dayjs.Dayjs[];
+    stringifyMonthForUrl: (date: dayjs.ConfigType) => string;
+    stringifyDateForUrl: (date: dayjs.ConfigType) => string;
 }

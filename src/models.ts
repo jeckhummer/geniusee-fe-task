@@ -12,3 +12,7 @@ export type IStatesReportByDate = {
     confirmed: number;
     deaths: number;
 }[];
+
+export type FromUrl<T> = {
+    [K in keyof T]: string | undefined;
+};

@@ -19,6 +19,14 @@ export class DateHelper implements IDateHelper {
         return this.range(0, daysBetween + 1).map(x => startDate.add(x, "day"));
     }
 
+    public stringifyMonthForUrl = (date: dayjs.ConfigType): string => {
+        return dayjs(date).format("YYYY-MM");
+    }
+
+    public stringifyDateForUrl = (date: dayjs.ConfigType): string => {
+        return dayjs(date).format("YYYY-MM-DD");
+    }
+
     private range = (start: number, end: number): number[] => {
         return Array.from(
             { length: end - start },

@@ -1,13 +1,11 @@
 import dayjs from "dayjs";
 
 import { IStatesReportByDate, ITimeSpanReport } from "../models";
-import { checkExhaustiveness } from "../utils";
 import {
     ICovidAPIClient,
     ICovidReportService,
     IDateHelper,
     ICovidClientShortReport,
-    ITimeSpanReportParams,
     ICovidClientFullReport
 } from "./models";
 
@@ -19,30 +17,10 @@ export class CovidReportService implements ICovidReportService {
         private readonly dateHelper: IDateHelper,
     ) { }
 
-    public getTimeSpanReport = async (params: ITimeSpanReportParams): Promise<ITimeSpanReport> => {
-        const now = dayjs();
-        let start: dayjs.ConfigType;
-        let end: dayjs.ConfigType = now;
-
-        switch (params.period) {
-            case 'last_week':
-                start = now.subtract(1, 'week');
-                break;
-            case 'last_month':
-                start = now.subtract(1, 'month').subtract(1, 'day');
-                break;
-            case 'from_beginning_by_month':
-                start = this.dateHelper.roundToMonth(params.date);
-                end = start.add(1, 'month').subtract(1, 'day');
-                start = start.subtract(1, 'day');
-                break;
-            default:
-                checkExhaustiveness(params);
-        }
-
+    public getTimeSpanReport = async (start: dayjs.ConfigType, end: dayjs.ConfigType): Promise<ITimeSpanReport> => {
         // here we get one extra day at the start to calculate correct death/confirmed diff
-        // (sometimes diffs from API are incorrect...)
-        const dates = this.dateHelper.getDatesRange(start, end);
+        // (sometimes diffs from API are incorrect ¯\_(ツ)_/¯)
+        const dates = this.dateHelper.getDatesRange(dayjs(start).subtract(1, 'day'), end);
         const shortReports = (await Promise.all(
             dates.map(x =>
                 this.client.getShortReport(x, CovidReportService.DEFAULT_COUNTRY_ISO_CODE)
@@ -69,8 +47,8 @@ export class CovidReportService implements ICovidReportService {
             : [];
     }
 
-    public getEarliestAvailableReportDate = (): dayjs.ConfigType => {
-        return new Date(2020, 0, 22); // 22 Jan 2020
+    public getEarliestAvailableReportDate = (): dayjs.Dayjs => {
+        return dayjs('2020-01-22');
     }
 
     private static convertToTimeSpanReport = (shortReports: ICovidClientShortReport[]): ITimeSpanReport => {

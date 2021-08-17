@@ -1,38 +1,56 @@
+import QueryString from "qs";
 import * as React from "react";
+import { Redirect, Route, Switch, useHistory } from "react-router-dom";
 
-import { Container, Divider, Header } from 'semantic-ui-react';
-import { useAppDispatch, useAppSelector } from "../hooks";
-import { useServices } from "../services";
-import { getStatesReportByDate } from "../store";
+import { Layout } from "./Layout";
+import { StatesReportByDatePage } from "./StatesReportByDatePage";
+import { TimeSpanReportPage } from "./TimeSpanReportPage";
 
 export const App: React.FC = () => {
-    const { covidReportService } = useServices();
-    const statesReportByDate = useAppSelector(s => s.statesReportByDate);
-    const dispatch = useAppDispatch();
-
-    React.useEffect(() => {
-        dispatch(
-            getStatesReportByDate(
-                covidReportService.getStatesReportByDate('2021-07-15')
-            )
-        );
-    }, []);
+    const history = useHistory();
 
     return (
-        <>
-            <Container style={{ marginTop: 40 }}>
-                <Header textAlign="center" as='h1'>
-                    COVID 🦠 STATS 📈 FOR USA 🇺🇸
-                </Header>
-                <Divider />
+        <Layout>
+            <Switch>
+                <Route path="/" exact render={({ location: { search } }) => {
+                    const qs = QueryString.parse(search, { ignoreQueryPrefix: true });
+                    const params = {
+                        span: qs['span'] as string | undefined,
+                        month: qs['month'] as string | undefined,
+                    };
+                    const redirectWithValidParams = (params: { span: string, month: string | undefined }) => {
+                        const qs = QueryString.stringify(params, { addQueryPrefix: true });
+                        history.replace('/' + qs);
+                    }
 
-                Data available since 22 Jan 2020
+                    return (
+                        <TimeSpanReportPage
+                            onInvalidUrlParams={redirectWithValidParams}
+                            urlParams={params}
+                        />
+                    );
+                }} />
 
-                <pre>
-                    {JSON.stringify(statesReportByDate, null, 4)}
-                </pre>
-            </Container>
-            <br />
-        </>
+                <Route path="/states" exact render={({ location: { search } }) => {
+                    const qs = QueryString.parse(search, { ignoreQueryPrefix: true });
+                    const params = {
+                        date: qs['date'] as string | undefined,
+                    };
+                    const redirectWithValidParams = (params: { date: string }) => {
+                        const qs = QueryString.stringify(params, { addQueryPrefix: true });
+                        history.replace('/states' + qs);
+                    }
+
+                    return (
+                        <StatesReportByDatePage
+                            onInvalidUrlParams={redirectWithValidParams}
+                            urlParams={params}
+                        />
+                    );
+                }} />
+
+                <Redirect to="/" />
+            </Switch>
+        </Layout>
     );
 };
