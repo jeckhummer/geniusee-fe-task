@@ -8,7 +8,7 @@ import { buildServices, ServiceProvider } from './services';
 import { store } from './store';
 
 import 'semantic-ui-css/semantic.min.css';
-import './index.scss';
+import './index.css';
 
 const services = buildServices();
 

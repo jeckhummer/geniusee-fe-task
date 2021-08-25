@@ -25,6 +25,7 @@ export const App: React.FC = () => {
 
                     return (
                         <TimeSpanReportPage
+                            onDateClick={date => history.push('/states?date=' + date)}
                             onInvalidUrlParams={redirectWithValidParams}
                             urlParams={params}
                         />
@@ -43,6 +44,7 @@ export const App: React.FC = () => {
 
                     return (
                         <StatesReportByDatePage
+                            onBackClick={() => history.push('/')}
                             onInvalidUrlParams={redirectWithValidParams}
                             urlParams={params}
                         />

@@ -2,9 +2,9 @@ import { AxiosInstance } from "axios";
 import dayjs from 'dayjs';
 import QueryString from "qs";
 
-import { ICovidAPIClient, ICovidClientFullReport, ICovidClientShortReport } from "./models";
+import { ICovidApiClient, ICovidClientFullReport, ICovidClientShortReport } from "./models";
 
-export class CovidAPIClient implements ICovidAPIClient {
+export class CovidApiClient implements ICovidApiClient {
     public constructor(private readonly axiosInstance: AxiosInstance) { }
 
     public getShortReport = async (date: dayjs.ConfigType, countryISOCode: string): Promise<ICovidClientShortReport | null> => {

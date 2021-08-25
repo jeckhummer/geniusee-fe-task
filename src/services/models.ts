@@ -37,7 +37,7 @@ export type ICovidClientFullReport = {
     };
 }[];
 
-export interface ICovidAPIClient {
+export interface ICovidApiClient {
     getShortReport: (date: dayjs.ConfigType, countryISOCode: string) => Promise<ICovidClientShortReport | null>;
     getFullReport: (date: dayjs.ConfigType, countryISOCode: string) => Promise<ICovidClientFullReport>;
 }

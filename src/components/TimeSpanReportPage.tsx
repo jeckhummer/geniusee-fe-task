@@ -1,5 +1,7 @@
 import dayjs from 'dayjs';
 import * as React from 'react';
+import ReactApexChart from 'react-apexcharts';
+import { Loader, Message } from 'semantic-ui-react';
 
 import { useAppDispatch, useAppSelector } from "../hooks";
 import { useServices } from "../services";
@@ -24,12 +26,34 @@ export const TimeSpanReportPage: React.FC<{
     urlParams: {
         span: string | undefined,
         month: string | undefined,
-    };
+    },
+    onDateClick: (date: string) => void,
     onInvalidUrlParams: (params: { span: Span, month: string | undefined }) => void,
-}> = ({ urlParams, onInvalidUrlParams }) => {
+}> = ({ urlParams, onInvalidUrlParams, onDateClick }) => {
     const { covidReportService, dateHelper } = useServices();
     const timeSpanReport = useAppSelector(s => s.timeSpanReport);
     const dispatch = useAppDispatch();
+
+    const [series, categories] = React.useMemo(() => {
+        if (timeSpanReport.status === 'success') {
+            const series: { name: string, data: number[] }[] = [
+                { name: 'Deaths diff', data: [] },
+                { name: 'Confirmed diff', data: [] },
+            ];
+            const categories: string[] = [];
+
+            timeSpanReport.data.forEach(x => {
+                categories.push(x.date);
+
+                series[0].data.push(x.deathsDiff + 1000);
+                series[1].data.push(x.confirmedDiff);
+            });
+
+            return [series, categories];
+        } else {
+            return [];
+        }
+    }, [timeSpanReport]);
 
     React.useEffect(() => {
         const now = dayjs();
@@ -37,7 +61,7 @@ export const TimeSpanReportPage: React.FC<{
         // url params sanitization
         const span = urlParams.span && isValidTimeSpan(urlParams.span)
             ? urlParams.span
-            : 'lastWeek';
+            : 'lastMonth';
         let month;
 
         if (span === 'fromBeginningByMonth') {
@@ -88,11 +112,62 @@ export const TimeSpanReportPage: React.FC<{
         }
     }, [urlParams]);
 
+    const options: ApexCharts.ApexOptions = React.useMemo(() => ({
+        colors: ['#ff6b6b', '#f9ca24'],
+        chart: {
+            toolbar: {
+                show: false,
+            },
+            events: {
+                dataPointSelection: function (_, __, { dataPointIndex }) {
+                    onDateClick(timeSpanReport.data[dataPointIndex].date);
+                }
+            }
+        },
+        plotOptions: {
+            bar: {
+                borderRadius: 0,
+                horizontal: false,
+            },
+        },
+        dataLabels: {
+            enabled: false
+        },
+        xaxis: {
+            type: 'datetime',
+            categories,
+        },
+        legend: {
+            position: 'top',
+            offsetY: 10,
+        },
+        fill: {
+            opacity: 1,
+        },
+    }), []);
+
     return (
         <>
-            <pre>
-                {JSON.stringify(timeSpanReport, null, 4)}
-            </pre>
+            {(() => {
+                if (timeSpanReport.status === 'success') {
+                    return (
+                        <>
+                            <ReactApexChart
+                                type="bar"
+                                series={series}
+                                height={350}
+                                options={options}
+                            />
+                        </>
+                    );
+                } else if (timeSpanReport.status === 'loading') {
+                    return <Loader active />
+                } else if (timeSpanReport.status === 'error') {
+                    return <Message error>{timeSpanReport.error?.message}</Message>;
+                } else {
+                    return null;
+                }
+            })()}
         </>
     );
 };

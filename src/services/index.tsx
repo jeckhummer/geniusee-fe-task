@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import { AxiosService } from "./axiosService";
-import { CovidAPIClient } from "./covidAPIClient";
+import { CovidApiClient } from "./covidApiClient";
 import { CovidReportService } from "./covidReportService";
 import { DateHelper } from "./dateHelper";
 import { ICovidReportService, IDateHelper } from "./models";
@@ -16,7 +16,7 @@ export const ServiceContext = React.createContext<IServices>(null as any);
 export const buildServices = (): IServices => {
     const axiosService = new AxiosService();
     const axiosInstance = axiosService.getInstance();
-    const covidAPIClient = new CovidAPIClient(axiosInstance);
+    const covidAPIClient = new CovidApiClient(axiosInstance);
     const dateHelper = new DateHelper();
     const covidReportService = new CovidReportService(covidAPIClient, dateHelper);
 

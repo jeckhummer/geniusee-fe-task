@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 
 import { IStatesReportByDate, ITimeSpanReport } from "../models";
 import {
-    ICovidAPIClient,
+    ICovidApiClient,
     ICovidReportService,
     IDateHelper,
     ICovidClientShortReport,
@@ -13,7 +13,7 @@ export class CovidReportService implements ICovidReportService {
     private static DEFAULT_COUNTRY_ISO_CODE = 'USA';
 
     public constructor(
-        private readonly client: ICovidAPIClient,
+        private readonly client: ICovidApiClient,
         private readonly dateHelper: IDateHelper,
     ) { }
 
