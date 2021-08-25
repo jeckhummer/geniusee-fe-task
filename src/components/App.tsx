@@ -14,19 +14,17 @@ export const App: React.FC = () => {
             <Switch>
                 <Route path="/" exact render={({ location: { search } }) => {
                     const qs = QueryString.parse(search, { ignoreQueryPrefix: true });
-                    const params = {
-                        span: qs['span'] as string | undefined,
-                        month: qs['month'] as string | undefined,
-                    };
-                    const redirectWithValidParams = (params: { span: string, month: string | undefined }) => {
+                    const params = { span: qs['span'] as string | undefined };
+                    const redirectWithValidParams = (params: { span: string }) => {
                         const qs = QueryString.stringify(params, { addQueryPrefix: true });
                         history.replace('/' + qs);
-                    }
+                    };
 
                     return (
                         <TimeSpanReportPage
                             onDateClick={date => history.push('/states?date=' + date)}
                             onInvalidUrlParams={redirectWithValidParams}
+                            onSpanChange={redirectWithValidParams}
                             urlParams={params}
                         />
                     );
@@ -34,9 +32,7 @@ export const App: React.FC = () => {
 
                 <Route path="/states" exact render={({ location: { search } }) => {
                     const qs = QueryString.parse(search, { ignoreQueryPrefix: true });
-                    const params = {
-                        date: qs['date'] as string | undefined,
-                    };
+                    const params = { date: qs['date'] as string | undefined };
                     const redirectWithValidParams = (params: { date: string }) => {
                         const qs = QueryString.stringify(params, { addQueryPrefix: true });
                         history.replace('/states' + qs);

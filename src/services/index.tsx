@@ -16,9 +16,9 @@ export const ServiceContext = React.createContext<IServices>(null as any);
 export const buildServices = (): IServices => {
     const axiosService = new AxiosService();
     const axiosInstance = axiosService.getInstance();
-    const covidAPIClient = new CovidApiClient(axiosInstance);
+    const covidApiClient = new CovidApiClient(axiosInstance);
     const dateHelper = new DateHelper();
-    const covidReportService = new CovidReportService(covidAPIClient, dateHelper);
+    const covidReportService = new CovidReportService(covidApiClient, dateHelper);
 
     return {
         covidReportService,

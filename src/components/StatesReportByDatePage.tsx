@@ -54,6 +54,9 @@ export const StatesReportByDatePage: React.FC<{
         return (
             <>
                 <BackButton onClick={onBackClick} />
+                <br />
+                <br />
+                Report for date: {dayjs(urlParams.date).format('DD MMM YYYY')}
 
                 {(() => {
                     if (status === 'success') {

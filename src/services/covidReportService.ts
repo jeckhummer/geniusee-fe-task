@@ -19,7 +19,7 @@ export class CovidReportService implements ICovidReportService {
 
     public getTimeSpanReport = async (start: dayjs.ConfigType, end: dayjs.ConfigType): Promise<ITimeSpanReport> => {
         // here we get one extra day at the start to calculate correct death/confirmed diff
-        // (sometimes diffs from API are incorrect ¯\_(ツ)_/¯)
+        // sometimes diffs from API are incorrect ¯\_(ツ)_/¯
         const dates = this.dateHelper.getDatesRange(dayjs(start).subtract(1, 'day'), end);
         const shortReports = (await Promise.all(
             dates.map(x =>
@@ -32,7 +32,7 @@ export class CovidReportService implements ICovidReportService {
 
         return CovidReportService.convertToTimeSpanReport(shortReports)
             // remove extra day from the start
-            .filter(x => dayjs(x.date).isAfter(start));
+            .filter(x => !dayjs(start).isAfter(x.date));
     }
 
     public getStatesReportByDate = async (date: dayjs.ConfigType): Promise<IStatesReportByDate> => {
